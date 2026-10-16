@@ -3,65 +3,150 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>单摆物理模拟器 (交互控制版) · 第 5 周实验</title>
+  <meta name="color-scheme" content="dark" />
+  <title>单摆物理模拟器 · 意图造物与 ReAct 闭环编程实验</title>
   <style>
+    :root {
+      --bg: #1a1a24;
+      --panel: rgba(30, 30, 42, 0.75);
+      --border: rgba(255, 255, 255, 0.10);
+      --text: #e6ebf2;
+      --text-dim: #8f9db3;
+      --label: #90caf9;
+      --accent: #00e5ff;
+      --blue-1: #1e88e5;
+      --blue-2: #1565c0;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      background-color: #1a1a24;
-      color: #e0e6ed;
-      font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      min-height: 100vh;
+      padding: 28px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg);
+      background-image: radial-gradient(120% 90% at 50% 0%, #20202c 0%, #1a1a24 55%, #141420 100%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 840px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow: hidden;
       gap: 14px;
     }
+
     header { text-align: center; }
-    h1 { font-size: 1.35rem; font-weight: 600; color: #f0f4f8; }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #f2f6fb;
+    }
+
     .badge {
       display: inline-block;
-      margin-top: 6px;
-      font-size: 0.75rem;
-      padding: 2px 10px;
-      border-radius: 10px;
-      background: rgba(33, 150, 243, 0.16);
-      color: #64b5f6;
-      border: 1px solid rgba(33, 150, 243, 0.35);
+      margin-top: 7px;
+      padding: 3px 11px;
+      font-size: 0.74rem;
+      border-radius: 999px;
+      color: #7fe6ff;
+      background: rgba(0, 229, 255, 0.10);
+      border: 1px solid rgba(0, 229, 255, 0.28);
     }
+
+    /* ---------- 画布舞台 ---------- */
+    .stage {
+      position: relative;
+      width: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    }
+
     canvas {
       display: block;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-      background: radial-gradient(circle at 50% 30%, #22222f 0%, #14141c 100%);
+      width: 100%;
+      height: auto;
+      background: radial-gradient(circle at 50% 26%, #22222f 0%, #14141c 100%);
     }
+
+    /* ---------- 右上角实时数据 ---------- */
+    .hud {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.74rem;
+      border-radius: 10px;
+      background: rgba(20, 20, 30, 0.62);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hud-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--text-dim);
+    }
+
+    .hud-row b {
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-weight: 600;
+      color: #d8f7ff;
+    }
+
     /* ---------- 毛玻璃参数控制面板 ---------- */
     .panel {
+      width: 100%;
+      padding: 14px 24px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
       gap: 22px;
-      width: 100%;
-      max-width: 800px;
-      padding: 12px 24px;
-      background: rgba(30, 30, 42, 0.75);
+      border-radius: 14px;
+      background: var(--panel);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
     }
-    .group { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; }
+
+    .group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.82rem;
+    }
+
     .group-label {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      color: #90caf9;
+      gap: 14px;
+      color: var(--label);
       font-weight: 500;
     }
-    .value { color: #ffffff; font-family: ui-monospace, Consolas, monospace; }
+
+    .value {
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      color: #ffffff;
+    }
+
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
@@ -71,114 +156,202 @@
       background: #33334d;
       outline: none;
     }
+
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      background: #00e5ff;
-      box-shadow: 0 0 8px #00e5ff;
+      background: var(--accent);
+      box-shadow: 0 0 9px var(--accent);
       cursor: pointer;
       transition: transform 0.12s ease;
     }
-    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.18); }
+
     input[type="range"]::-moz-range-thumb {
       width: 16px;
       height: 16px;
       border: none;
       border-radius: 50%;
-      background: #00e5ff;
-      box-shadow: 0 0 8px #00e5ff;
+      background: var(--accent);
+      box-shadow: 0 0 9px var(--accent);
       cursor: pointer;
     }
+
+    input[type="range"]:focus-visible { box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.25); }
+
     .btn {
       align-self: center;
-      padding: 8px 20px;
+      padding: 9px 22px;
       border: none;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--blue-1) 0%, var(--blue-2) 100%);
       color: #ffffff;
+      font-family: inherit;
       font-size: 0.85rem;
       font-weight: 600;
-      font-family: inherit;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      box-shadow: 0 2px 10px rgba(30, 136, 229, 0.4);
-      transition: all 0.2s ease;
+      box-shadow: 0 2px 12px rgba(30, 136, 229, 0.4);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
     }
+
     .btn:hover {
-      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
-      box-shadow: 0 4px 14px rgba(66, 165, 245, 0.55);
+      background: linear-gradient(135deg, #42a5f5 0%, var(--blue-1) 100%);
+      box-shadow: 0 5px 16px rgba(66, 165, 245, 0.55);
       transform: translateY(-1px);
     }
+
     .btn:active { transform: translateY(1px); }
+
+    .btn:focus-visible { outline: 2px solid rgba(0, 229, 255, 0.7); outline-offset: 2px; }
+
+    .hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .hint kbd {
+      padding: 1px 6px;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.72rem;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>单摆物理模拟器</h1>
-    <span class="badge">Task 03 · 参数滑块实时绑定与物理交互</span>
-  </header>
+  <div class="app">
+    <header>
+      <h1>单摆物理模拟器</h1>
+      <span class="badge">第 5 周 · 意图造物与 ReAct 闭环编程实验 · 单文件零依赖</span>
+    </header>
 
-  <canvas id="canvas" width="800" height="460"></canvas>
-
-  <div class="panel">
-    <div class="group">
-      <div class="group-label">
-        <span>摆长 L</span><span id="lenVal" class="value">200 px</span>
+    <div class="stage">
+      <canvas id="stage" width="840" height="480"></canvas>
+      <div class="hud">
+        <div class="hud-row"><span>摆角 θ</span><b id="hudTheta">45.0°</b></div>
+        <div class="hud-row"><span>角速度 ω</span><b id="hudOmega">0.00 rad/s</b></div>
+        <div class="hud-row"><span>理论周期 T</span><b id="hudPeriod">3.66 s</b></div>
       </div>
-      <input type="range" id="lenSlider" min="100" max="350" step="1" value="200" />
     </div>
 
-    <div class="group">
-      <div class="group-label">
-        <span>重力 g</span><span id="gravVal" class="value">9.8</span>
+    <section class="panel">
+      <div class="group">
+        <label class="group-label" for="lenSlider">
+          <span>摆长 L</span><span id="lenVal" class="value">200 px</span>
+        </label>
+        <input type="range" id="lenSlider" min="100" max="350" step="1" value="200" />
       </div>
-      <input type="range" id="gravSlider" min="1.0" max="25.0" step="0.1" value="9.8" />
-    </div>
 
-    <div class="group">
-      <div class="group-label">
-        <span>空气阻尼 k</span><span id="dampVal" class="value">0.0020</span>
+      <div class="group">
+        <label class="group-label" for="gravSlider">
+          <span>重力 g</span><span id="gravVal" class="value">9.8</span>
+        </label>
+        <input type="range" id="gravSlider" min="1.0" max="25.0" step="0.1" value="9.8" />
       </div>
-      <input type="range" id="dampSlider" min="0.000" max="0.010" step="0.0005" value="0.002" />
-    </div>
 
-    <button id="resetBtn" class="btn">重置摆动</button>
+      <div class="group">
+        <label class="group-label" for="dampSlider">
+          <span>空气阻尼 k</span><span id="dampVal" class="value">0.0020</span>
+        </label>
+        <input type="range" id="dampSlider" min="0.000" max="0.010" step="0.0005" value="0.002" />
+      </div>
+
+      <button id="resetBtn" class="btn" type="button">重置摆动</button>
+    </section>
+
+    <p class="hint">
+      拖动滑块实时改变物理参数 ｜ 点击「重置摆动」精准回到 45° 初始角 ｜
+      按 <kbd>F12</kbd> 打开控制台：0 红色报错
+    </p>
   </div>
 
   <script>
-    // ============================================================
-    // 任务三 · 在 MVP 基础上追加实时参数交互
-    // 物理方程：α = -(g / L) · sin(θ) - k · ω
-    // ============================================================
-    const canvas = document.getElementById('canvas');
+    'use strict';
+
+    /* ============================================================
+     * 单摆物理模拟器 —— 第 5 周实验最终交付版
+     * 物理模型：α = -(g / L) · sin(θ) - k · ω
+     *   θ  摆角(rad) · L 摆长(px) · g 重力 · k 空气阻尼 · ω 角速度
+     * 积分方法：RK2 中点法 + 1/240 s 固定步长累加器（帧率无关）
+     * ============================================================ */
+
+    const canvas = document.getElementById('stage');
     const ctx = canvas.getContext('2d');
 
-    const origin = { x: canvas.width / 2, y: 90 };
-    const G_UNIT = 60;       // 像素坐标系标定：1 单位 g 折算为 60 px/s²
+    /* ---------- 画布逻辑坐标与高清适配 ---------- */
+    const W = 840;
+    const H = 480;
 
-    // 可变参数（由滑块实时驱动）
-    let LENGTH = 200;
-    let GRAVITY = 9.8;
-    let DAMPING = 0.002;
+    function fitCanvas() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
 
-    // 初始角度常量
-    const INIT_ANGLE = Math.PI / 4;  // 45°
+    /* ---------- 常量与初值 ---------- */
+    const ORIGIN = { x: W / 2, y: 96 };
+    const INIT_ANGLE = Math.PI / 4;   // 初始摆角 45°
+    const G_UNIT = 60;                // 像素坐标系标定：1 单位 g 折算为 60 px/s²
+    const FIXED_DT = 1 / 240;         // 物理固定步长
+    const MAX_FRAME_DT = 0.1;         // 单帧最大时间跨度，防止切后台回来后物理爆炸
 
-    // 物理状态量
+    /* ---------- 可变参数（由滑块驱动） ---------- */
+    let LENGTH = 200;      // 摆长 px
+    let GRAVITY = 9.8;     // 重力
+    let DAMPING = 0.002;   // 空气阻尼系数
+
+    /* ---------- 物理状态量 ---------- */
     let theta = INIT_ANGLE;
     let omega = 0;
-    let lastTime = performance.now();
 
-    // DOM 引用
+    /* ---------- DOM 引用 ---------- */
     const lenSlider = document.getElementById('lenSlider');
     const gravSlider = document.getElementById('gravSlider');
     const dampSlider = document.getElementById('dampSlider');
     const lenVal = document.getElementById('lenVal');
     const gravVal = document.getElementById('gravVal');
     const dampVal = document.getElementById('dampVal');
+    const resetBtn = document.getElementById('resetBtn');
+    const hudTheta = document.getElementById('hudTheta');
+    const hudOmega = document.getElementById('hudOmega');
+    const hudPeriod = document.getElementById('hudPeriod');
 
-    // ---------- 滑块事件绑定：驱动物理参数实时变化 ----------
+    /* ---------- 物理计算 ---------- */
+
+    // 角加速度：α = -(g/L)·sin(θ) - k·ω
+    function angularAcceleration(t, w) {
+      const gPx = GRAVITY * G_UNIT;
+      return -(gPx / LENGTH) * Math.sin(t) - DAMPING * G_UNIT * w;
+    }
+
+    // RK2（中点法）单步积分：比显式欧拉更精确，长时间摆动不走样
+    function integrateStep(dt) {
+      const [w1, a1] = [omega, angularAcceleration(theta, omega)];
+      const thetaMid = theta + w1 * dt * 0.5;
+      const omegaMid = omega + a1 * dt * 0.5;
+
+      const aMid = angularAcceleration(thetaMid, omegaMid);
+      omega += aMid * dt;
+      theta += omegaMid * dt;
+    }
+
+    /* ---------- 重置：精准回到 45° 初始状态 ---------- */
+    function resetAnimation() {
+      theta = INIT_ANGLE;
+      omega = 0;
+      accumulator = 0;
+      lastTime = performance.now();
+    }
+
+    /* ---------- 滑块实时绑定 ---------- */
     lenSlider.addEventListener('input', (e) => {
       LENGTH = parseFloat(e.target.value);
       lenVal.textContent = LENGTH + ' px';
@@ -194,85 +367,180 @@
       dampVal.textContent = DAMPING.toFixed(4);
     });
 
-    // 角加速度：α = -(g/L)·sin(θ) - k·ω
-    function angularAcceleration(t, w) {
-      const gPx = GRAVITY * G_UNIT;
-      return -(gPx / LENGTH) * Math.sin(t) - DAMPING * G_UNIT * w;
+    // 事件以 addEventListener 绑定，函数引用在同一作用域内解析，杜绝 ReferenceError
+    resetBtn.addEventListener('click', resetAnimation);
+
+    /* ---------- 渲染 ---------- */
+
+    function drawGrid() {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.028)';
+      ctx.lineWidth = 1;
+      const gap = 42;
+      for (let x = 0; x <= W; x += gap) {
+        ctx.beginPath();
+        ctx.moveTo(x + 0.5, 0);
+        ctx.lineTo(x + 0.5, H);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= H; y += gap) {
+        ctx.beginPath();
+        ctx.moveTo(0, y + 0.5);
+        ctx.lineTo(W, y + 0.5);
+        ctx.stroke();
+      }
+      ctx.restore();
     }
 
-    function updatePhysics(dt) {
-      omega += angularAcceleration(theta, omega) * dt;
-      theta += omega * dt;
-    }
+    function drawAngleIndicator() {
+      const r = 82;
+      const start = Math.PI / 2 - theta;
+      const end = Math.PI / 2;
 
-    // 重置摆动：摆球精准回到 45° 初始状态
-    function resetAnimation() {
-      theta = INIT_ANGLE;
-      omega = 0;
-    }
-
-    // 修复根因：不再依赖内联 onclick 的全局查找，改为在同一脚本作用域内直接绑定函数引用
-    document.getElementById('resetBtn').addEventListener('click', resetAnimation);
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const bobX = origin.x + LENGTH * Math.sin(theta);
-      const bobY = origin.y + LENGTH * Math.cos(theta);
-
-      // 1. 竖直参考线
+      // 角度扇形
       ctx.beginPath();
-      ctx.moveTo(origin.x, origin.y);
-      ctx.lineTo(origin.x, origin.y + LENGTH + 40);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.setLineDash([4, 6]);
+      ctx.moveTo(ORIGIN.x, ORIGIN.y);
+      ctx.arc(ORIGIN.x, ORIGIN.y, r, Math.min(start, end), Math.max(start, end));
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.07)';
+      ctx.fill();
+
+      // 角度弧线
+      ctx.beginPath();
+      ctx.arc(ORIGIN.x, ORIGIN.y, r, Math.min(start, end), Math.max(start, end));
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.42)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 角度数值
+      const mid = Math.PI / 2 - theta / 2;
+      ctx.beginPath();
+      ctx.font = '12px ui-monospace, Consolas, monospace';
+      ctx.fillStyle = 'rgba(140, 235, 255, 0.9)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(
+        (theta * 180 / Math.PI).toFixed(1) + '°',
+        ORIGIN.x + Math.cos(mid) * (r + 26),
+        ORIGIN.y + Math.sin(mid) * (r + 26)
+      );
+    }
+
+    function drawPendulum() {
+      const bobX = ORIGIN.x + LENGTH * Math.sin(theta);
+      const bobY = ORIGIN.y + LENGTH * Math.cos(theta);
+
+      // 悬点竖直参考线
+      ctx.beginPath();
+      ctx.moveTo(ORIGIN.x, ORIGIN.y);
+      ctx.lineTo(ORIGIN.x, ORIGIN.y + LENGTH + 46);
+      ctx.setLineDash([5, 7]);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.10)';
       ctx.lineWidth = 1;
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // 2. 摆绳
+      // 摆绳（自上而下渐隐）
+      const rope = ctx.createLinearGradient(ORIGIN.x, ORIGIN.y, bobX, bobY);
+      rope.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
+      rope.addColorStop(1, 'rgba(0, 229, 255, 0.75)');
       ctx.beginPath();
-      ctx.moveTo(origin.x, origin.y);
+      ctx.moveTo(ORIGIN.x, ORIGIN.y);
       ctx.lineTo(bobX, bobY);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.strokeStyle = rope;
       ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
       ctx.stroke();
 
-      // 3. 支点
+      // 支点
       ctx.beginPath();
-      ctx.arc(origin.x, origin.y, 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#90caf9';
+      ctx.arc(ORIGIN.x, ORIGIN.y, 6.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#9fd0ff';
       ctx.shadowColor = '#42a5f5';
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 12;
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // 4. 摆球（微弱发光）
+      // 摆球外层光晕
+      const halo = ctx.createRadialGradient(bobX, bobY, 2, bobX, bobY, 46);
+      halo.addColorStop(0, 'rgba(0, 229, 255, 0.30)');
+      halo.addColorStop(1, 'rgba(0, 229, 255, 0)');
+      ctx.beginPath();
+      ctx.arc(bobX, bobY, 46, 0, Math.PI * 2);
+      ctx.fillStyle = halo;
+      ctx.fill();
+
+      // 摆球本体
+      const body = ctx.createRadialGradient(bobX - 6, bobY - 6, 2, bobX, bobY, 19);
+      body.addColorStop(0, '#b6f6ff');
+      body.addColorStop(0.55, '#00e5ff');
+      body.addColorStop(1, '#0091a8');
       ctx.beginPath();
       ctx.arc(bobX, bobY, 18, 0, Math.PI * 2);
-      ctx.fillStyle = '#00e5ff';
+      ctx.fillStyle = body;
       ctx.shadowColor = '#00e5ff';
       ctx.shadowBlur = 18;
       ctx.fill();
-
-      // 5. 高光
-      ctx.beginPath();
-      ctx.arc(bobX - 5, bobY - 5, 5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
       ctx.shadowBlur = 0;
+
+      // 高光
+      ctx.beginPath();
+      ctx.arc(bobX - 5.5, bobY - 5.5, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
       ctx.fill();
     }
 
+    function render() {
+      ctx.clearRect(0, 0, W, H);
+      drawGrid();
+      drawAngleIndicator();
+      drawPendulum();
+    }
+
+    /* ---------- 实时数据面板（节流刷新，避免每帧写 DOM） ---------- */
+    let hudTimer = 0;
+
+    function updateHud(dt) {
+      hudTimer += dt;
+      if (hudTimer < 0.1) return;
+      hudTimer = 0;
+
+      hudTheta.textContent = (theta * 180 / Math.PI).toFixed(1) + '°';
+      hudOmega.textContent = omega.toFixed(2) + ' rad/s';
+
+      const t = 2 * Math.PI * Math.sqrt(LENGTH / (GRAVITY * G_UNIT));
+      hudPeriod.textContent = t.toFixed(2) + ' s';
+    }
+
+    /* ---------- 主循环：固定步长物理 + 可变帧率渲染 ---------- */
+    let lastTime = performance.now();
+    let accumulator = 0;
+
     function animate(now) {
-      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      const frameDt = Math.min((now - lastTime) / 1000, MAX_FRAME_DT);
       lastTime = now;
 
-      updatePhysics(dt);
-      draw();
+      // 用累加器把整帧时间切成固定物理步长，保证不同刷新率下行为一致
+      accumulator += frameDt;
+      let guard = 0;
+      while (accumulator >= FIXED_DT && guard < 600) {
+        integrateStep(FIXED_DT);
+        accumulator -= FIXED_DT;
+        guard += 1;
+      }
+
+      updateHud(frameDt);
+      render();
 
       requestAnimationFrame(animate);
     }
 
+    /* ---------- 启动 ---------- */
+    fitCanvas();
+    window.addEventListener('resize', fitCanvas);
+    window.addEventListener('orientationchange', fitCanvas);
+
+    hudPeriod.textContent = (2 * Math.PI * Math.sqrt(LENGTH / (GRAVITY * G_UNIT))).toFixed(2) + ' s';
     requestAnimationFrame(animate);
   </script>
 </body>
