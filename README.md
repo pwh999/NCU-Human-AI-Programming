@@ -2,11 +2,11 @@
 
 > 南昌大学《人机协同程序设计》 · 第 5 周实验 · 个人独立上机实验（HOTL 模式）
 
-- **学生姓名**：[你的姓名]
-- **学号**：[你的学号]
-- **所属专业**：[你的学院与专业]
+- **学生姓名**：潘炜昊
+- **学号**：5715126019
+- **所属专业**：材料科学与工程（江铜实验班）
 - **实验日期**：2026-10-16
-- **GitHub 作品集主仓库链接**：`https://github.com/[你的 GitHub 用户名]/NCU-Human-AI-Programming`
+- **GitHub 作品集主仓库链接**：`https://github.com/PWH999/NCU-Human-AI-Programming`
 
 ---
 
@@ -81,21 +81,23 @@ Uncaught ReferenceError: resetAnimation is not defined
 
 ---
 
-## 三、Git 敏捷演进提交历史（共 7 次 Commit）
+## 三、Git 敏捷演进提交历史（共 8 次 Commit）
 
-每完成一个任务即锁定一个稳定基线，保证任何一轮迭代失败都能安全回退：
+每完成一个任务即锁定一个稳定基线，保证任何一轮迭代失败都能安全回退。完整哈希与时间戳可用 `git log --oneline` 复现：
 
 ```bash
-$ git log --oneline
-f5fd5a4 docs: add runtime screenshots of the final simulator
-b19410d refactor: adopt fixed-timestep physics loop and enrich canvas rendering
-225a204 fix: resolve reset button runtime error via ReAct loop
-1cd386d feat: add interactive parameter sliders for length, gravity and damping
-a209dd9 feat: complete pendulum MVP with simple harmonic motion
-9937d25 feat(week05): init pendulum experiment workspace
+# 时间顺序自上而下为「最新 → 最早」
+docs(readme): fill in student identity and GitHub repository link
+docs(readme): complete human-AI collaboration triple reflection report
+docs: add runtime screenshots of the final simulator
+refactor: adopt fixed-timestep physics loop and enrich canvas rendering
+fix: resolve reset button runtime error via ReAct loop
+feat: add interactive parameter sliders for length, gravity and damping
+feat: complete pendulum MVP with simple harmonic motion
+feat(week05): init pendulum experiment workspace
 ```
 
-> 说明：最早的一次提交即任务一的基线锁定；`225a204` 的 diff 只有函数重命名与事件绑定方式两处改动，对应第二节「闭环控制反思」中的外科手术式修复。以上 6 次为代码与素材的提交，本次补全反思报告的提交 `docs(readme): complete human-AI collaboration triple reflection report` 即第 7 次，可用 `git log --oneline` 复现完整记录。
+> 说明：最早的一次提交即任务一的基线锁定；`fix: resolve reset button runtime error via ReAct loop` 的 diff 只有函数重命名与事件绑定方式两处改动，对应第二节「闭环控制反思」中的外科手术式修复。
 
 ---
 
@@ -121,27 +123,28 @@ a209dd9 feat: complete pendulum MVP with simple harmonic motion
 - [x] 点击「重置摆动」：摆球精准回到 45° 初始状态
 - [x] README.md 中已完整填写「人机协同三反思」
 - [ ] 执行 `git push` 将代码推送到 GitHub 个人作品集（见第六节）
-- [ ] 将仓库归档打包为标准 Zip 格式（`Week05_Lab_[学号姓名].zip`）
+- [ ] 将仓库归档打包为标准 Zip 格式（`Week05_Lab_5715126019潘炜昊.zip`）
 
 ---
 
 ## 六、推送到 GitHub 作品集的操作步骤
 
-本仓库已完成全部 Commit，仅剩远端同步一步（需使用你自己的 GitHub 账号）：
+本仓库已完成全部 8 次 Commit，提交者身份已设置为 `潘炜昊 <PWH999@users.noreply.github.com>`，仅剩远端同步一步：
 
 ```bash
-# 1) 校准提交者身份（把占位信息替换为你的真实姓名与邮箱）
-git config user.name "你的姓名"
-git config user.email "你的邮箱@example.com"
-
-# 2) 在 GitHub 上先新建空仓库 NCU-Human-AI-Programming（不要勾选 README）
-git remote add origin https://github.com/[你的 GitHub 用户名]/NCU-Human-AI-Programming.git
-
-# 3) 推送 main 分支
+# 1) 先在 GitHub 上新建空仓库 NCU-Human-AI-Programming（不要勾选 README / .gitignore）
+# 2) 关联远端并推送
+git remote add origin https://github.com/PWH999/NCU-Human-AI-Programming.git
 git push -u origin main
 ```
 
-推送完成后，把本文件顶部的 GitHub 链接替换为真实地址即可交付。
+如需改用其他邮箱提交（例如学校邮箱），可执行：
+
+```bash
+git config user.email "你的邮箱@example.com"
+```
+
+推送完成后，浏览器打开 `https://github.com/PWH999/NCU-Human-AI-Programming` 核对：仓库首页应能看到本次提交历史与 `index.html`、`README.md`。
 
 ---
 
